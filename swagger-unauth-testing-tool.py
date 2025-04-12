@@ -3,6 +3,7 @@ import requests
 import json
 import random
 import string
+from urllib.parse import urlparse
 
 def generate_random_values(data_type):
     """Generate random values based on the data type."""
@@ -18,6 +19,11 @@ def generate_random_values(data_type):
         return [random.randint(1, 10) for _ in range(5)]
     else:
         return None
+
+def extract_host_from_url(swagger_url):
+    """Extract host from the Swagger JSON URL."""
+    parsed_url = urlparse(swagger_url)
+    return parsed_url.netloc
 
 def test_endpoints_from_csv(input_csv, output_csv):
     """Read Swagger JSON URLs from CSV and test their endpoints."""
@@ -35,8 +41,8 @@ def test_endpoints_from_csv(input_csv, output_csv):
                 swagger_response.raise_for_status()
                 swagger_data = swagger_response.json()
 
-                # Extract host, basePath, and paths
-                host = swagger_data.get('host', '')
+                # Extract host from Swagger or fallback to Swagger URL
+                host = swagger_data.get('host', extract_host_from_url(swagger_url))
                 base_path = swagger_data.get('basePath', '')
 
                 for path, methods in swagger_data.get('paths', {}).items():
